@@ -1,0 +1,9 @@
+# Local Kuksa Databroker for developing the mock feeder before Leda is running.
+# Leda ships its own databroker (port 30555), so this is only for local testing.
+services:
+  databroker:
+    image: ghcr.io/eclipse-kuksa/kuksa-databroker:0.7.1
+    container_name: kuksa-databroker
+    command: ["--insecure"]
+    ports:
+      - "127.0.0.1:${KUKSA_HOST_PORT:-55555}:55555"
