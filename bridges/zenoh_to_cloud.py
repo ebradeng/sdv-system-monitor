@@ -21,10 +21,14 @@ import zenoh
 CLOUD_URL = "https://sdv-http-receiver-418057313473.northamerica-northeast2.run.app"
 
 
-def open_zenoh(listen):
-    """Open a Zenoh session that accepts the connector's connection on `listen`."""
+def open_zenoh(listen=None, connect=None):
+    """Open a session that listens for a peer or connects to a router."""
     conf = zenoh.Config()
-    conf.insert_json5("listen/endpoints", json.dumps([listen]))
+    if connect:
+        conf.insert_json5("mode", '"client"')
+        conf.insert_json5("connect/endpoints", json.dumps([connect]))
+    else:
+        conf.insert_json5("listen/endpoints", json.dumps([listen]))
     return zenoh.open(conf)
 
 
@@ -53,8 +57,11 @@ def send(url, api_key, body):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--url", default=CLOUD_URL)
-    parser.add_argument("--listen", default="tcp/127.0.0.1:7447",
-                        help="where the Zenoh connector in Leda connects to")
+    endpoints = parser.add_mutually_exclusive_group()
+    endpoints.add_argument("--listen", default=None,
+                           help="where the Zenoh connector connects to")
+    endpoints.add_argument("--connect", default=None,
+                           help="existing Zenoh router endpoint")
     args = parser.parse_args()
 
     api_key = os.environ.get("SDV_API_KEY")
@@ -63,7 +70,7 @@ def main():
 
     # Zenoh delivers messages on its own thread; a queue hands them to the sender.
     messages = queue.Queue()
-    session = open_zenoh(args.listen)
+    session = open_zenoh(args.listen or "tcp/127.0.0.1:7447", args.connect)
     session.declare_subscriber(
         "sdv/**", lambda sample: messages.put((str(sample.key_expr), sample.payload.to_string())))
     print(f"Forwarding Zenoh 'sdv/**' to {args.url} (Ctrl+C to stop)", flush=True)

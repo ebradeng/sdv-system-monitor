@@ -52,7 +52,7 @@ def open_zenoh(connect=None, listen=None):
     return zenoh.open(conf)
 
 
-def run(host, port, vehicle_id, connect):
+def run(host, port, vehicle_id, connect, require_complete=False):
     key = f"sdv/{vehicle_id}/tire_pressure"
     session = open_zenoh(connect)
     publisher = session.declare_publisher(key)
@@ -67,7 +67,7 @@ def run(host, port, vehicle_id, connect):
                         for path, dp in updates.items():
                             if dp is not None and dp.value is not None:
                                 latest[path] = dp.value
-                        if latest:
+                        if latest and (not require_complete or len(latest) == len(FIELDS)):
                             msg = build_message(vehicle_id, latest)
                             publisher.put(json.dumps(msg))
                             log.info("sent %s", msg["tirePressure_kPa"])
@@ -90,9 +90,11 @@ def main():
     parser.add_argument("--vehicle-id", default="sdv1")
     parser.add_argument("--connect", default=None,
                         help="Zenoh endpoint to connect to, e.g. tcp/34.1.2.3:7447 (optional)")
+    parser.add_argument("--require-complete", action="store_true",
+                        help="wait for all four wheel values before publishing")
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s", datefmt="%H:%M:%S")
-    run(args.host, args.port, args.vehicle_id, args.connect)
+    run(args.host, args.port, args.vehicle_id, args.connect, args.require_complete)
 
 
 if __name__ == "__main__":

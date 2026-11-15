@@ -1,0 +1,8 @@
+FROM python:3.11-slim
+
+RUN pip install --no-cache-dir kuksa-client==0.6.0 eclipse-zenoh==1.10.1
+WORKDIR /app
+COPY mock_tire_pressure.py /app/
+COPY zenoh_connector.py /app/
+COPY zenoh_to_cloud.py /app/
+ENV PYTHONUNBUFFERED=1

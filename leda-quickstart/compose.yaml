@@ -1,0 +1,24 @@
+services:
+ leda_car_1:
+  image: ghcr.io/eclipse-leda/leda-distro/leda-quickstart-x86
+  container_name: leda_1
+  entrypoint: ["/bin/sh", "/startup_mounts/scripts/quickstart-entrypoint.sh"]
+  stdin_open: true
+  tty: true
+  ipc: "host"
+  ports:
+   - "55555:30555" #for KUKSA listening port (send stuff from python script on host machine into leda)
+   - "7447:7447"  #for zenoh native protocol port
+   - "8000:8000"  #zenoh default REST API port
+  extra_hosts:
+   - "host.docker.internal:host-gateway" #for testing using localhost in place of cloud endpoint
+  volumes:
+   - .:/startup_mounts
+  environment:
+   - VEHICLE_ID=sdv1
+  healthcheck:
+   test: ["CMD-SHELL", "test -f /tmp/sdv-bootstrap-ready && ! test -f /tmp/sdv-bootstrap-error && kill -0 $$(cat /tmp/sdv-local-receiver.pid)"]
+   interval: 15s
+   timeout: 5s
+   retries: 5
+   start_period: 10m

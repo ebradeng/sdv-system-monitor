@@ -1,0 +1,181 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1110" viewBox="0 0 1600 1110" role="img" aria-labelledby="title desc">
+  <title id="title">SDV system monitor intended architecture</title>
+  <desc id="desc">Four Docker quickstart containers on Windows each contain QEMU, Leda, Kuksa and Zenoh. Windows mock sensors and future CARLA data feed Kuksa. Each vehicle's Python bridge posts telemetry to Cloud Run, followed by Pub/Sub and Splunk on a separate machine. The first milestone uses a local HTTP receiver for one vehicle's tire pressure.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+    <marker id="arrow-planned" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7c3aed"/>
+    </marker>
+    <style>
+      text { font-family: Arial, sans-serif; fill: #172033; }
+      .title { font-size: 25px; font-weight: bold; }
+      .sub { font-size: 15px; fill: #475569; }
+      .heading { font-size: 18px; font-weight: bold; }
+      .label { font-size: 15px; font-weight: bold; }
+      .small { font-size: 13px; }
+      .tiny { font-size: 12px; }
+      .outer { fill: #f8fafc; stroke: #64748b; stroke-width: 2; }
+      .docker { fill: #e8f4ff; stroke: #2563a6; stroke-width: 2; }
+      .qemu { fill: #fff; stroke: #7893ae; stroke-width: 1.5; }
+      .leda { fill: #effcf5; stroke: #25835b; stroke-width: 1.5; }
+      .stage { fill: #fff; stroke: #475569; stroke-width: 1.4; }
+      .cloud { fill: #eef4ff; stroke: #4f70ac; stroke-width: 2; }
+      .future { fill: #faf5ff; stroke: #7c3aed; stroke-width: 2; stroke-dasharray: 7 5; }
+      .flow { fill: none; stroke: #334155; stroke-width: 2; marker-end: url(#arrow); }
+      .planned-flow { fill: none; stroke: #7c3aed; stroke-width: 2; stroke-dasharray: 7 5; marker-end: url(#arrow-planned); }
+    </style>
+  </defs>
+
+  <text x="30" y="38" class="title">SDV system monitor — intended architecture</text>
+  <text x="30" y="63" class="sub">First milestone: one quickstart vehicle sends tire pressure to a local HTTP receiver. Cloud Run, four vehicles and CARLA are the target.</text>
+
+  <rect x="25" y="85" width="1080" height="950" rx="14" class="outer"/>
+  <text x="45" y="112" class="heading">Windows 11 simulation host</text>
+  <text x="45" y="134" class="small">Docker Compose starts one x86_64 Leda quickstart container per vehicle.</text>
+
+  <rect x="45" y="205" width="220" height="90" rx="8" class="stage"/>
+  <text x="155" y="236" text-anchor="middle" class="label">Python mock sensors</text>
+  <text x="155" y="259" text-anchor="middle" class="small">Windows host → Kuksa ports</text>
+  <path d="M 265 250 H 275 V 245 H 300" class="flow"/>
+  <path d="M 265 250 H 275 V 435 H 300" class="flow"/>
+  <path d="M 265 250 H 275 V 625 H 300" class="flow"/>
+  <path d="M 265 250 H 275 V 815 H 300" class="flow"/>
+
+  <rect x="45" y="390" width="220" height="95" rx="8" class="future"/>
+  <text x="155" y="420" text-anchor="middle" class="label">CARLA server</text>
+  <text x="155" y="442" text-anchor="middle" class="small">Four simulated vehicles</text>
+  <text x="155" y="463" text-anchor="middle" class="small">Planned</text>
+  <path d="M 155 485 V 515" class="planned-flow"/>
+  <rect x="45" y="520" width="220" height="115" rx="8" class="future"/>
+  <text x="155" y="550" text-anchor="middle" class="label">eCAL + iceoryx bridge</text>
+  <text x="155" y="572" text-anchor="middle" class="small">Route by vehicle identity</text>
+  <text x="155" y="593" text-anchor="middle" class="small">to exposed Kuksa ports</text>
+  <text x="155" y="614" text-anchor="middle" class="small">Planned</text>
+  <path d="M 265 578 H 282 V 258 H 300" class="planned-flow"/>
+  <path d="M 265 578 H 282 V 448 H 300" class="planned-flow"/>
+  <path d="M 265 578 H 282 V 638 H 300" class="planned-flow"/>
+  <path d="M 265 578 H 282 V 828 H 300" class="planned-flow"/>
+
+  <g transform="translate(300 150)">
+    <rect width="745" height="172" rx="8" class="docker"/>
+    <text x="14" y="21" class="label">Docker quickstart: vehicle sdv1</text>
+    <rect x="12" y="30" width="721" height="132" rx="6" class="qemu"/>
+    <text x="24" y="49" class="small">QEMU x86_64</text>
+    <rect x="24" y="57" width="697" height="94" rx="5" class="leda"/>
+    <text x="36" y="75" class="small">Leda OS</text>
+    <rect x="38" y="86" width="120" height="49" rx="4" class="stage"/>
+    <text x="98" y="106" text-anchor="middle" class="tiny">Kuksa ingress</text>
+    <text x="98" y="123" text-anchor="middle" class="tiny">from host</text>
+    <path d="M 158 110 H 180" class="flow"/>
+    <rect x="184" y="86" width="115" height="49" rx="4" class="stage"/>
+    <text x="241" y="106" text-anchor="middle" class="tiny">Kuksa</text>
+    <text x="241" y="123" text-anchor="middle" class="tiny">Databroker</text>
+    <path d="M 299 110 H 321" class="flow"/>
+    <rect x="325" y="86" width="170" height="49" rx="4" class="stage"/>
+    <text x="410" y="106" text-anchor="middle" class="tiny">Zenoh + connector</text>
+    <text x="410" y="123" text-anchor="middle" class="tiny">Zenoh managed by Kanto</text>
+    <path d="M 495 110 H 517" class="flow"/>
+    <rect x="521" y="86" width="160" height="49" rx="4" class="stage"/>
+    <text x="601" y="106" text-anchor="middle" class="tiny">Python Zenoh → HTTP</text>
+    <text x="601" y="123" text-anchor="middle" class="tiny">bridge (target in Leda)</text>
+  </g>
+  <g transform="translate(300 340)">
+    <rect width="745" height="172" rx="8" class="docker"/>
+    <text x="14" y="21" class="label">Docker quickstart: vehicle sdv2</text>
+    <rect x="12" y="30" width="721" height="132" rx="6" class="qemu"/>
+    <text x="24" y="49" class="small">QEMU x86_64</text>
+    <rect x="24" y="57" width="697" height="94" rx="5" class="leda"/>
+    <text x="36" y="75" class="small">Leda OS</text>
+    <rect x="38" y="86" width="120" height="49" rx="4" class="stage"/>
+    <text x="98" y="106" text-anchor="middle" class="tiny">Kuksa ingress</text>
+    <text x="98" y="123" text-anchor="middle" class="tiny">from host</text>
+    <path d="M 158 110 H 180" class="flow"/>
+    <rect x="184" y="86" width="115" height="49" rx="4" class="stage"/>
+    <text x="241" y="106" text-anchor="middle" class="tiny">Kuksa</text>
+    <text x="241" y="123" text-anchor="middle" class="tiny">Databroker</text>
+    <path d="M 299 110 H 321" class="flow"/>
+    <rect x="325" y="86" width="170" height="49" rx="4" class="stage"/>
+    <text x="410" y="106" text-anchor="middle" class="tiny">Zenoh + connector</text>
+    <text x="410" y="123" text-anchor="middle" class="tiny">Zenoh managed by Kanto</text>
+    <path d="M 495 110 H 517" class="flow"/>
+    <rect x="521" y="86" width="160" height="49" rx="4" class="stage"/>
+    <text x="601" y="106" text-anchor="middle" class="tiny">Python Zenoh → HTTP</text>
+    <text x="601" y="123" text-anchor="middle" class="tiny">bridge (target in Leda)</text>
+  </g>
+  <g transform="translate(300 530)">
+    <rect width="745" height="172" rx="8" class="docker"/>
+    <text x="14" y="21" class="label">Docker quickstart: vehicle sdv3</text>
+    <rect x="12" y="30" width="721" height="132" rx="6" class="qemu"/>
+    <text x="24" y="49" class="small">QEMU x86_64</text>
+    <rect x="24" y="57" width="697" height="94" rx="5" class="leda"/>
+    <text x="36" y="75" class="small">Leda OS</text>
+    <rect x="38" y="86" width="120" height="49" rx="4" class="stage"/>
+    <text x="98" y="106" text-anchor="middle" class="tiny">Kuksa ingress</text>
+    <text x="98" y="123" text-anchor="middle" class="tiny">from host</text>
+    <path d="M 158 110 H 180" class="flow"/>
+    <rect x="184" y="86" width="115" height="49" rx="4" class="stage"/>
+    <text x="241" y="106" text-anchor="middle" class="tiny">Kuksa</text>
+    <text x="241" y="123" text-anchor="middle" class="tiny">Databroker</text>
+    <path d="M 299 110 H 321" class="flow"/>
+    <rect x="325" y="86" width="170" height="49" rx="4" class="stage"/>
+    <text x="410" y="106" text-anchor="middle" class="tiny">Zenoh + connector</text>
+    <text x="410" y="123" text-anchor="middle" class="tiny">Zenoh managed by Kanto</text>
+    <path d="M 495 110 H 517" class="flow"/>
+    <rect x="521" y="86" width="160" height="49" rx="4" class="stage"/>
+    <text x="601" y="106" text-anchor="middle" class="tiny">Python Zenoh → HTTP</text>
+    <text x="601" y="123" text-anchor="middle" class="tiny">bridge (target in Leda)</text>
+  </g>
+  <g transform="translate(300 720)">
+    <rect width="745" height="172" rx="8" class="docker"/>
+    <text x="14" y="21" class="label">Docker quickstart: vehicle sdv4</text>
+    <rect x="12" y="30" width="721" height="132" rx="6" class="qemu"/>
+    <text x="24" y="49" class="small">QEMU x86_64</text>
+    <rect x="24" y="57" width="697" height="94" rx="5" class="leda"/>
+    <text x="36" y="75" class="small">Leda OS</text>
+    <rect x="38" y="86" width="120" height="49" rx="4" class="stage"/>
+    <text x="98" y="106" text-anchor="middle" class="tiny">Kuksa ingress</text>
+    <text x="98" y="123" text-anchor="middle" class="tiny">from host</text>
+    <path d="M 158 110 H 180" class="flow"/>
+    <rect x="184" y="86" width="115" height="49" rx="4" class="stage"/>
+    <text x="241" y="106" text-anchor="middle" class="tiny">Kuksa</text>
+    <text x="241" y="123" text-anchor="middle" class="tiny">Databroker</text>
+    <path d="M 299 110 H 321" class="flow"/>
+    <rect x="325" y="86" width="170" height="49" rx="4" class="stage"/>
+    <text x="410" y="106" text-anchor="middle" class="tiny">Zenoh + connector</text>
+    <text x="410" y="123" text-anchor="middle" class="tiny">Zenoh managed by Kanto</text>
+    <path d="M 495 110 H 517" class="flow"/>
+    <rect x="521" y="86" width="160" height="49" rx="4" class="stage"/>
+    <text x="601" y="106" text-anchor="middle" class="tiny">Python Zenoh → HTTP</text>
+    <text x="601" y="123" text-anchor="middle" class="tiny">bridge (target in Leda)</text>
+  </g>
+
+  <text x="310" y="933" class="small">Each vehicle has a distinct identity and a separately exposed Kuksa port.</text>
+  <text x="310" y="956" class="small">Bridge ingress targets the matching Kuksa instance; exact port mappings are open.</text>
+  <text x="310" y="979" class="small">Dashed purple: planned CARLA path. The four-vehicle deployment is also future work.</text>
+  <text x="310" y="1002" class="small">Current test: HTTP bridge posts to a local receiver instead of Cloud Run.</text>
+
+  <path d="M 981 260 H 1073 V 337 H 1160" class="flow"/>
+  <path d="M 981 450 H 1073 V 337 H 1160" class="flow"/>
+  <path d="M 981 640 H 1073 V 337 H 1160" class="flow"/>
+  <path d="M 981 830 H 1073 V 337 H 1160" class="flow"/>
+  <text x="1083" y="308" class="small">HTTP POST</text>
+  <rect x="1165" y="290" width="375" height="90" rx="8" class="cloud"/>
+  <text x="1352" y="324" text-anchor="middle" class="label">Google Cloud Run</text>
+  <text x="1352" y="347" text-anchor="middle" class="small">Existing HTTP telemetry receiver</text>
+  <path d="M 1352 380 V 420" class="flow"/>
+  <rect x="1165" y="425" width="375" height="75" rx="8" class="cloud"/>
+  <text x="1352" y="457" text-anchor="middle" class="label">Google Cloud Pub/Sub</text>
+  <text x="1352" y="478" text-anchor="middle" class="small">Telemetry messages</text>
+  <path d="M 1352 500 V 557" class="flow"/>
+  <rect x="1140" y="562" width="425" height="270" rx="12" class="outer"/>
+  <text x="1160" y="588" class="heading">Separate machine</text>
+  <rect x="1165" y="610" width="375" height="62" rx="8" class="stage"/>
+  <text x="1352" y="647" text-anchor="middle" class="label">Pub/Sub-to-Splunk bridge</text>
+  <path d="M 1352 672 V 700" class="flow"/>
+  <rect x="1165" y="705" width="375" height="100" rx="8" class="stage"/>
+  <text x="1352" y="740" text-anchor="middle" class="label">Splunk HTTP Event Collector</text>
+  <text x="1352" y="766" text-anchor="middle" class="small">Index and dashboard</text>
+  <text x="30" y="1080" class="sub">See SystemDesign.md for contracts, assumptions, open decisions and the distinction between current and intended behavior.</text>
+</svg>
