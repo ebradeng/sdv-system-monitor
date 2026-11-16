@@ -31,6 +31,15 @@ for image in zenoh-1.10.1.tar sdv-telemetry-tire-v1.tar; do
     fi
 done
 
+key_file=/startup_mounts/secrets/cloud_api_key
+if [ ! -f "$key_file" ] || ! python3 -c 'import pathlib, sys; key = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8").strip(); sys.exit(0 if key and "\n" not in key and "\r" not in key else 1)' "$key_file"; then
+    echo "Missing, empty, or invalid cloud API key file: $key_file" >&2
+    exit 1
+fi
+
+ssh $ssh_opts -p 2222 root@127.0.0.1 \
+    'umask 077; mkdir -p /run/sdv-secrets; chmod 700 /run/sdv-secrets; cat > /run/sdv-secrets/cloud_api_key; chmod 600 /run/sdv-secrets/cloud_api_key' < "$key_file"
+
 ssh $ssh_opts -p 2222 root@127.0.0.1 mkdir -p /data/sdv-images
 scp $ssh_opts -P 2222 /startup_mounts/images/zenoh-1.10.1.tar \
     /startup_mounts/images/sdv-telemetry-tire-v1.tar root@127.0.0.1:/data/sdv-images/
@@ -69,6 +78,11 @@ actual = (data.get("config") or {}).get("cmd") or []
 if data["host_config"]["network_mode"] != "host" or (expected and actual != expected):
     print("Existing container configuration does not match bootstrap; refusing to replace it", file=sys.stderr)
     sys.exit(1)
+if data["container_name"] == "sdv-http-bridge":
+    mounts = data.get("mount_points") or []
+    if not any(m.get("source") == "/run/sdv-secrets" and m.get("destination") == "/run/sdv-secrets" for m in mounts):
+        print("Existing bridge has no secret mount", file=sys.stderr)
+        sys.exit(1)
 ' "$@"; then
             echo "Configuration mismatch for $name" >&2
             exit 1
@@ -79,7 +93,12 @@ if data["host_config"]["network_mode"] != "host" or (expected and actual != expe
             return
         fi
     else
-        kanto-cm create --name "$name" --network host --rp unless-stopped "$image" "$@"
+        if [ "$name" = "sdv-http-bridge" ]; then
+            kanto-cm create --name "$name" --network host --rp unless-stopped \
+                --mp /run/sdv-secrets:/run/sdv-secrets "$image" "$@"
+        else
+            kanto-cm create --name "$name" --network host --rp unless-stopped "$image" "$@"
+        fi
     fi
     kanto-cm start --name "$name"
     attempt=0
@@ -98,10 +117,9 @@ ensure_container sdv-tire-connector docker.io/library/sdv-telemetry:tire-v1 \
     python /app/zenoh_connector.py --host 127.0.0.1 --port 30555 \
     --vehicle-id "$vehicle_id" --connect tcp/127.0.0.1:7447 --require-complete
 ensure_container sdv-http-bridge docker.io/library/sdv-telemetry:tire-v1 \
-    env SDV_API_KEY=local-test-key python /app/zenoh_to_cloud.py \
-    --connect tcp/127.0.0.1:7447 --url http://10.0.2.2:18080
+    sh -c 'SDV_API_KEY="$(cat /run/sdv-secrets/cloud_api_key)"; export SDV_API_KEY; exec python /app/zenoh_to_cloud.py --connect tcp/127.0.0.1:7447 --url https://sdv-http-receiver-418057313473.northamerica-northeast2.run.app'
 GUEST
 
 touch /tmp/sdv-bootstrap-ready
 trap - EXIT
-echo "Leda bootstrap completed; HTTP target is the local receiver."
+echo "Leda bootstrap completed; HTTP target is Google Cloud Run."

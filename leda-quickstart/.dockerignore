@@ -1,0 +1,5 @@
+*
+!Dockerfile.telemetry
+!mock_tire_pressure.py
+!zenoh_connector.py
+!zenoh_to_cloud.py
